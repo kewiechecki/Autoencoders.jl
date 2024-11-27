@@ -18,7 +18,7 @@ Convenience functions for training and logging.
 ```
 
 ```julia
-using Autoencoders, TrainingIO
+using Autoencoders
 
 using MLDatasets, StatsPlots, OneHotArrays
 ```
