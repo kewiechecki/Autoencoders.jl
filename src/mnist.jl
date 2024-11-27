@@ -1,4 +1,3 @@
-
 function mnistconv()
     kern = (3,3)
     s = (2,2)
@@ -28,13 +27,26 @@ end
 
 function mnistenc()
     mlp = Chain(Dense(12 => 6,relu),
-                Dense(6 => m,relu))
+                Dense(6 => 3,relu))
 
     return Chain(mnistconv(),mlp)
 end
 
 function mnistdec()
-    mlp = Chain(Dense(m => 6,relu),
+    mlp = Chain(Dense(3 => 6,relu),
                 Dense(6 => 12,relu))
     return Chain(mlp, mnistdeconv())
+end
+
+function mnistloader(batchsize::Integer)
+    dat = MNIST(split=:train)[:]
+    target = onehotbatch(dat.targets,0:9)
+
+    m_x,m_y,n = size(dat.features)
+    X = reshape(dat.features[:, :, :], m_x, m_y, 1, n)
+
+    loader = Flux.DataLoader((X,target),
+                            batchsize=batchsize,
+                            shuffle=true)
+    return loader
 end

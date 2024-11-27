@@ -5,6 +5,7 @@ import Base.size
 import Base.mapreduce
 
 using Flux, Functors, CUDA, Zygote, LinearAlgebra
+using MLDatasets,OneHotArrays
 using DocumenterCitations
 
 export SparseEncoder,Autoencoder,SAE,
@@ -20,8 +21,12 @@ export SparseClassifier,PSAE,SparseDict,
 export SparseDict, DictEnc, dict
 
 export entropy,L1,L1_scaleinv,L1_cos,L1_normcos,L2,loss,loss_SAE
+export aic,bic
+
 export zeroabl,meanabl
-export mnistenc, mnistdec, mnistclassifier
+export sampledat,scaledat,unhot
+
+export mnistenc, mnistdec, mnistclassifier, mnistloader
 
 @doc raw"""
 `AbstractEncoder`
@@ -122,5 +127,7 @@ include("DictEnc.jl")
 
 include("lossfns.jl")
 include("ablations.jl")
+
 include("mnist.jl")
+include("preprocessing.jl")
 end # module Autoencoders
