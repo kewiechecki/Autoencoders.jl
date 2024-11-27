@@ -1,0 +1,4 @@
+name = "Autoencoders"
+uuid = "b00fdf05-2506-4616-becf-033b9f32b9b9"
+authors = ["kewiechecki <kaw504@nyu.edu>"]
+version = "0.1.0"

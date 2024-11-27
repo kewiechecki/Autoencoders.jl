@@ -1,0 +1,5 @@
+module Autoencoders
+
+greet() = print("Hello World!")
+
+end # module Autoencoders
