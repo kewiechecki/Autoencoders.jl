@@ -1,7 +1,0 @@
-# Autoencoders.jl
-
-## Installation
-
-```julia
-] add https://github.com/kewiechecki/Autoencoders.jl
-```

@@ -1,6 +1,0 @@
-@doc raw"""
-`AbstractParitioned`
-
-Class of `AbstractEncoder` that 
-"""
-abstract type AbstractParitioned <: AbstractEncoder
