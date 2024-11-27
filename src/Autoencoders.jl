@@ -1,5 +1,9 @@
 module Autoencoders
 
+import Base.map
+import Base.size
+import Base.mapreduce
+
 using Flux, Functors, CUDA, Zygote, LinearAlgebra
 using DocumenterCitations
 
@@ -17,6 +21,7 @@ export SparseDict, DictEnc, dict
 
 export entropy,L1,L1_scaleinv,L1_cos,L1_normcos,L2,loss,loss_SAE
 export zeroabl,meanabl
+export mnistenc, mnistdec, mnistclassifier
 
 @doc raw"""
 `AbstractEncoder`
@@ -71,6 +76,7 @@ Subtypes of `AbstractEncoder` that attempt to find latent classifications in a d
 See also: `PAE`, `DistEnc`, `AbstractDDAE`, `AbstractEncoder`.
 """
 abstract type AbstractPartitioned <: AbstractEncoder
+end
 
 @doc raw"""
 `cluster(M:: <: AbstractPartitioned, X) -> typeof(X)`
@@ -116,5 +122,5 @@ include("DictEnc.jl")
 
 include("lossfns.jl")
 include("ablations.jl")
-
+include("mnist.jl")
 end # module Autoencoders

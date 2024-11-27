@@ -141,7 +141,7 @@ function wak(G::AbstractArray; dims=1)
     return G
 end
 
-@rdoc raw"""
+@doc raw"""
 `pwak(K <: AbstractMatrix; dims=1) -> typeof(K)`
 
 Constructs a "partitioned weighted affinity kernel". Like `wak`, but instead of accepting an adjacency matrix, it accepts an `m × n` matrix `K` where each entry `K[i,j]` is the proability that sample `j` is in category `i` and all categories are mutually exclusive.

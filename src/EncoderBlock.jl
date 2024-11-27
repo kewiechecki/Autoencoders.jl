@@ -1,6 +1,3 @@
-import Base.size
-import Base.mapreduce
-
 @doc raw"""
 `EncoderBlock`
 
@@ -24,10 +21,6 @@ See also: `Flux.Parallel`.
 function EncoderBlock(f::Union{Function,DataType},h::Integer,connection,args...;kwargs...)
     layers = Parallel(connection,map(_->f(args...;kwargs...),1:h)...)
     return EncoderBlock(layers)
-end
-
-function (M::EncoderBlock)(x)
-    return M.heads(x)
 end
 
 @doc raw"""
@@ -70,7 +63,7 @@ function map(f::Function,M::EncoderBlock,args...;kwargs...)
     return map(m->f(m,args...;kwargs...),heads(M))
 end
 
-@rdoc raw"""
+@doc raw"""
 `mapreduce(f, g, M::EncoderBlock, args...; kwargs...) -> typeof(g(...))`
 `mapreduce(f, M::EncoderBlock, args...; kwargs...) -> typeof(g(...))`
 

@@ -59,7 +59,7 @@ end
 @functor SAE 
 
 # constructor specifying i/o dimensions
-function SAE(m,d,σ=relu)
+function SAE(m::Integer,d::Integer,σ=relu)
     weight = randn(d,m)
     bias = randn(d)
     return SAE(weight,bias,σ)

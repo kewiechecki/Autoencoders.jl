@@ -34,22 +34,22 @@ function L1_normcos(x::AbstractArray)
     return sum(x)
 end
 
-function L1(M::SparseEncoder,α,x)
+function L1(M::AbstractEncoder,α,x)
     c = diffuse(M,x)
     return α * sum(abs.(c))
 end
 
-function L1_scaleinv(M::SparseEncoder,α,x)
+function L1_scaleinv(M::AbstractEncoder,α,x)
     c = diffuse(M,x)
     return α * L1_scaleinv(c)
 end
 
-function L1_normcos(M::SparseEncoder,α,x)
+function L1_normcos(M::AbstractEncoder,α,x)
     c = diffuse(M,x)
     return α * L1_normcos(c)
 end
 
-function L2(M::SparseEncoder,lossfn,x,y)
+function L2(M::AbstractEncoder,lossfn,x,y)
     return lossfn(M(x),y)
 end
 
@@ -57,7 +57,7 @@ function loss(lossfn::Function)
     return (M,x,y)->lossfn(M(x),y)
 end
 
-function loss(M::SparseEncoder,α::AbstractFloat,lossfn::Function,
+function loss(M::AbstractEncoder,α::AbstractFloat,lossfn::Function,
               x::AbstractArray,y::AbstractArray)
     # x = cu(x)
     # y = cu(y)
@@ -65,7 +65,7 @@ function loss(M::SparseEncoder,α::AbstractFloat,lossfn::Function,
 end
 
 # if α isn't specified just calculate L2
-function loss(M::SparseEncoder,lossfn::Function,
+function loss(M::AbstractEncoder,lossfn::Function,
               x::AbstractArray,y::AbstractArray)
     # x = cu(x)
     # y = cu(y)
@@ -77,7 +77,7 @@ function loss_SAE(α::AbstractFloat,lossfn::Function,
     return M->loss(M,α,lossfn,x,y)
 end
 
-function loss_SAE(M_outer::SparseEncoder,α::AbstractFloat,lossfn::Function,
+function loss_SAE(M_outer::AbstractEncoder,α::AbstractFloat,lossfn::Function,
                   x::AbstractArray)
     # x = cu(x)
     yhat = M_outer(x)
@@ -89,14 +89,14 @@ function loss_SAE(lossfn::Function,x::AbstractArray,y::AbstractArray)
     return M->loss(M,lossfn,x,y)
 end
 
-function loss_SAE(M_outer::SparseEncoder,lossfn::Function,x::AbstractArray)
+function loss_SAE(M_outer::AbstractEncoder,lossfn::Function,x::AbstractArray)
     # x = cu(x)
     yhat = M_outer(x)
     f = M->L1(M,x) + L2(M,lossfn,x,yhat)
     return m->lossfn((M_outer[2] ∘ m ∘ M_outer[1])(x),yhat)
 end
 
-function loss_SAE(M_outer::SparseEncoder,α::AbstractFloat,lossfn::Function)
+function loss_SAE(M_outer::AbstractEncoder,α::AbstractFloat,lossfn::Function)
     return (M,x,_)->begin
         yhat = M_outer(x)
         E = diffuse(M_outer,x)
