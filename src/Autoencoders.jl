@@ -8,17 +8,23 @@ using Flux, Functors, CUDA, Zygote, LinearAlgebra
 using MLDatasets,OneHotArrays
 using DocumenterCitations
 
-export SparseEncoder,Autoencoder,SAE,
-    encode,decode,diffuse
+export AbstractEncoder, AbstractDDAE, AbstractPartitioned
 
-export EncoderBlock, heads,size,conn,map,mapreduce
+export SparseEncoder,Autoencoder,SAE
+export encode,decode,diffuse
 
+export EncoderBlock
+export heads,size,conn,map,mapreduce
+
+export DistEnc
+export kern, dist
 export euclidean,inveucl,cossim,sindiff,maskI,invsum,zerodiag,wak,pwak
-export DistEnc,kern,dist
 
-export SparseClassifier,PSAE,SparseDict,
-    cluster,centroid,partition,encodepred
-export SparseDict, DictEnc, dict
+export PAE, DistPart
+export cluster,centroid,partition,encodepred
+
+export SparseDict, DictEnc
+export dict
 
 export entropy,L1,L1_scaleinv,L1_cos,L1_normcos,L2,loss,loss_SAE
 export aic,bic
@@ -80,7 +86,7 @@ Subtypes of `AbstractEncoder` that attempt to find latent classifications in a d
 
 See also: `PAE`, `DistEnc`, `AbstractDDAE`, `AbstractEncoder`.
 """
-abstract type AbstractPartitioned <: AbstractEncoder
+abstract type AbstractPartitioned <: AbstractDDAE
 end
 
 @doc raw"""

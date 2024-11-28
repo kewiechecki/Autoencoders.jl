@@ -5,7 +5,7 @@ Partitioned autoencoder.
 
 See also: `encode`, `decode`, `diffuse`, `cluster`, `centroid`, `DistPart`.
 """
-struct PAE
+struct PAE <: AbstractPartitioned
     autoencoder::AbstractEncoder
     partitioner
 end

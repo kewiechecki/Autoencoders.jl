@@ -7,3 +7,4 @@
 *.jld2
 *.txt
 *.zip
+tmp/*

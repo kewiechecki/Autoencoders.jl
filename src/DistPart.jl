@@ -13,6 +13,10 @@ struct DistPart <: AbstractPartitioned
 end
 @functor DistPart
 
+function dist(M::DistPart,E)
+    return M.metric(E)
+end
+
 function kern(M::DistPart,X::AbstractArray{<:AbstractFloat})
     E = encode(M,X)
     D = dist(M,E)
@@ -26,4 +30,8 @@ function diffuse(M::DistPart,X::AbstractArray{<:AbstractFloat})
     P = partition(M,X)
     G = wak(P .* D)
     return (G * E')'
+end
+
+function (M::DistPart)(x)
+    return decode(M,diffuse(M,x))
 end

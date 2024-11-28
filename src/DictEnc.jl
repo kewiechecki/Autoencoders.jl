@@ -7,8 +7,8 @@ See also: `encode`, `decode`, `diffuse`, `cluster`, `centroid`, `PAE`, `DistEnc`
 """
 struct DictEnc <: AbstractPartitioned
     dict::SparseDict
-    classifier::Chain
-    decoder::Chain
+    classifier
+    decoder
 end
 @functor DictEnc
 

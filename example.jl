@@ -1,7 +1,17 @@
-using Autoencoders, TrainingIO
+using Autoencoders, TrainingIO, Flux, JLD2
 
 using MLDatasets,OneHotArrays
 
+# allows MNIST images to be viewed in terminal
+using ImageInTerminal, Colors
+
+function showdigit(img::Array{<:AbstractFloat,3})
+    x,y,z = size(img)
+    img = reshape(img,x,y)
+    Gray.(img')
+end
+
+path = "tmp/" #where to save models
 epochs = 100
 batchsize=512
 
@@ -16,12 +26,115 @@ opt = Flux.Optimiser(Flux.AdamW(η),Flux.WeightDecay(λ))
 α = 0.001
 
 # load MNIST
-dat = MNIST(split=:train)[:]
-target = onehotbatch(dat.targets,0:9)
-
-# split MNIST into batchsize of batchsize
+# split into batchsize of batchsize
+# each element of loader is a pair of 
 loader = mnistloader(batchsize)
 
-encoder = mnistenc()
-decoder = mnistdec()
-classifier = mnistclassifier()
+# example submodels
+encoder = mnistenc() |> gpu
+decoder = mnistdec() |> gpu
+classifier = mnistclassifier() |> gpu
+
+encodelabel = Chain(encoder,classifier)
+
+# loss function
+# loss(f) converts a binary loss function f::(X -> Y -> AbstractFloat) to a function g::((X -> Y) -> X -> Y -> AbstractFloat
+loss_classifier = loss(Flux.crossentropy)
+
+L_classifier = train!(encodelabel,
+                      path*"/classifier",
+                      loss_classifier,
+                      loader,
+                      opt,
+                      epochs,
+                      savecheckpts=false) # if true, saves a separate model each epoch
+
+autoenc = Autoencoder(encoder,decoder)
+
+loss_autoenc = loss(Flux.mse)
+
+L = train!(autoenc,
+           path*"/autoencoder",
+           loss_autoenc,
+           loader,
+           opt,
+           epochs,
+           ignoreY = true, # autoenc tries to reconstruct the input rather than classifying it, so the loss function should compare loss against the input rather than the labels
+           savecheckpts=false)
+
+# compare reconstructed output
+
+# examine first minibatch 
+x,y = first(loader)
+showdigit(x[:,:,:,1])
+
+x̂ = autoenc(x |> gpu) |> cpu
+showdigit(x̂[:,:,:,1])
+
+# paired encoder-classifier
+
+# return tuple of decoder, classifier output
+combine = (args...)->tuple(args...)
+multimodal = Autoencoder(encoder,Parallel(combine,decoder,classifier))
+
+loss_multimodal = (M,x,y)->begin
+    x̂,ŷ = M(x)
+    L_decoder = Flux.mse(x̂,x)
+    L_classifier = Flux.crossentropy(ŷ,y)
+    return L_decoder + L_classifier, L_decoder, L_classifier
+end
+
+L = train!(multimodal,
+           path*"/multimodal",
+           loss_multimodal,
+           loader,
+           opt,
+           epochs,
+           savecheckpts=false)
+
+@load path*"/multimodal/final.jld2" state 
+Flux.loadmodel!(multimodal,state)
+
+x̂,ŷ = multimodal(x |> gpu) |> cpu
+showdigit(x̂[:,:,:,1])
+
+# sparse autoencoder
+
+sae = SAE(3,50,relu) |> gpu
+
+# instead of training against object-level loss, we can train the SAE to reconstruct the embeddings
+loss_SAE = (M,x,_)->begin
+    E = diffuse(multimodal,x)
+    F = diffuse(M,E)
+    Ê = decode(M,F)
+
+    x,y = decode(multimodal,E)
+    x̂,ŷ = decode(multimodal,Ê)
+    
+    sparsity = L1(F)
+    L_decoder = Flux.mse(x̂,x)
+    L_classifier = Flux.crossentropy(ŷ,y)
+    L = sparsity + L_decoder + L_classifier
+    return L, sparsity, L_decoder, L_classifier
+end
+
+L_SAE = train!(sae,
+           path*"/SAE",
+           loss_SAE,
+           loader,
+           opt,
+           epochs,
+           savecheckpts=false)
+
+E = encode(multimodal,x|>gpu)
+x̂,ŷ = decode(multimodal,sae(E))
+# other variations
+sae_eucl = DistEnc(sae,inveucl)
+
+partitioner = Chain(Dense(3,50,relu),Dense(50,10,relu)) |> gpu
+sae_part = PAE(sae,partitioner)
+
+sae_distpart = DistPart(sae,partitioner,inveucl)
+
+dictdecoder = Chain(Dense(50 => 3,relu))
+sae_dict = DictEnc(partitioner,dictdecoder,50,10) |> gpu

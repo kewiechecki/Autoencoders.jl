@@ -3,7 +3,7 @@
 
 Class of `Autoencoder` that uses a distance metric to generate a diffusion kernel.
 """
-struct DistEnc <: AbstractEncoder
+struct DistEnc <: AbstractDDAE
     #encoder::Chain
     #decoder::Chain
     autoencoder::AbstractEncoder
@@ -26,3 +26,6 @@ function kern(M::DistEnc,E)
     return wak(D)
 end
 
+function (M::DistEnc)(x)
+    return decode(M,diffuse(M,x))
+end

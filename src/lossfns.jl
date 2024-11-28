@@ -53,6 +53,17 @@ function L2(M::AbstractEncoder,lossfn,x,y)
     return lossfn(M(x),y)
 end
 
+@doc raw"""
+`loss(lossfn::Function) -> Function`
+
+Converts a binary loss function `lossfn::(X -> Y -> Z <: AbstractFloat)` to a function `loss(lossfn)::((X -> Y) -> X -> Y -> Z`. 
+
+`loss(lossfn)(M,x,y)` accepts a callable object `M`, an argument `x` to `M`, and an expected result `y`. `lossfn` should compare the actual value of `M(x)` to an expected value `y`. 
+
+The intended usage is to construct loss functions for training `M`.
+
+See also: `Flux.mse`, `Flux.crossentropy`.
+""" 
 function loss(lossfn::Function)
     return (M,x,y)->lossfn(M(x),y)
 end
