@@ -4,9 +4,10 @@ import Base.map
 import Base.size
 import Base.mapreduce
 
-using Flux, Functors, CUDA, Zygote, LinearAlgebra
+using Reexport, DocumenterCitations
+@reexport using Flux
+using Functors, CUDA, Zygote, LinearAlgebra
 using MLDatasets,OneHotArrays
-using DocumenterCitations
 
 export AbstractEncoder, AbstractDDAE, AbstractPartitioned
 

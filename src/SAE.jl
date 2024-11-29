@@ -1,5 +1,5 @@
 @doc raw"""
-`Autoencoder(encoder::(T_e -> T_d), decoder::(T_d -> T_e)) -> T_e -> T_e
+`Autoencoder(encoder::(T_e -> T_d), decoder::(T_d -> T_e)) -> T_e -> T_e`
 
 Simplest autoencoder type. Wraps `encoder` and `decoder` models and provides `encode` and `decode` methods. `encoder` and `decoder` should both have type `* <: AbstractArray -> * <: AbstractArray`. 
 
