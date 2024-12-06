@@ -7,7 +7,8 @@ import Base.mapreduce
 using Reexport, DocumenterCitations
 @reexport using Flux
 using Functors, CUDA, Zygote, LinearAlgebra
-using MLDatasets,OneHotArrays
+#using MLDatasets, OneHotArrays
+#using StatsBase, InvertedIndices
 
 export AbstractEncoder, AbstractDDAE, AbstractPartitioned
 
@@ -30,10 +31,11 @@ export dict
 export entropy,L1,L1_scaleinv,L1_cos,L1_normcos,L2,loss,loss_SAE
 export aic,bic
 
-export zeroabl,meanabl
-export sampledat,scaledat,unhot
-
-export mnistenc, mnistdec, mnistclassifier, mnistloader
+export loss_test, loss_cossim
+#export zeroabl,meanabl
+#export sampledat,scaledat,unhot
+#
+#export mnistenc, mnistdec, mnistclassifier, mnistloader
 
 @doc raw"""
 `AbstractEncoder`
@@ -133,8 +135,9 @@ include("SparseDict.jl")
 include("DictEnc.jl")
 
 include("lossfns.jl")
-include("ablations.jl")
+include("testloss.jl")
+#include("ablations.jl")
 
-include("mnist.jl")
-include("preprocessing.jl")
+#include("mnist.jl")
+#include("preprocessing.jl")
 end # module Autoencoders
