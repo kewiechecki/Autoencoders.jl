@@ -56,9 +56,9 @@ end
 @doc raw"""
 `loss(lossfn::Function) -> Function`
 
-Converts a binary loss function `lossfn::(X -> Y -> Z <: AbstractFloat)` to a function `loss(lossfn)::((X -> Y) -> X -> Y -> Z`. 
+Converts a binary loss function `lossfn::((Y, Y) -> Z <: AbstractFloat)` to a function `loss(lossfn)::((X -> Y), X, Y) -> Z`. 
 
-`loss(lossfn)(M,x,y)` accepts a callable object `M`, an argument `x` to `M`, and an expected result `y`. `lossfn` should compare the actual value of `M(x)` to an expected value `y`. 
+`loss(lossfn)(M,x,y)` accepts a callable object `M` (usually a trainable model), an argument `x` to `M`, and an expected result `y`. `lossfn` should compare the actual value of `M(x)` to an expected value `y`. 
 
 The intended usage is to construct loss functions for training `M`.
 

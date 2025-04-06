@@ -158,3 +158,4 @@ function pwak(K::AbstractMatrix; dims=1)
     P = K' * K
     return wak(P)
 end
+

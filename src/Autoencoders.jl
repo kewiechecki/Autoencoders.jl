@@ -7,6 +7,7 @@ import Base.mapreduce
 using Reexport, DocumenterCitations
 @reexport using Flux
 using Functors, CUDA, Zygote, LinearAlgebra
+using SparseArrays
 #using MLDatasets, OneHotArrays
 #using StatsBase, InvertedIndices
 
@@ -27,6 +28,11 @@ export cluster,centroid,partition,encodepred
 
 export SparseDict, DictEnc
 export dict
+
+export TopK
+export topk, maskmax
+
+export mlp
 
 export entropy,L1,L1_scaleinv,L1_cos,L1_normcos,L2,loss,loss_SAE
 export aic,bic
@@ -133,6 +139,9 @@ include("DistPart.jl")
 
 include("SparseDict.jl")
 include("DictEnc.jl")
+
+include("TopK.jl")
+include("mlp.jl")
 
 include("lossfns.jl")
 include("testloss.jl")

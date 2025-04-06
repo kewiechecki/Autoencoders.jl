@@ -1,11 +1,3 @@
-function mlp(l::AbstractVector{<: Integer},f::Function)
-    θ = foldl(l[3:length(l)],
-              init=Chain(Dense(l[1] => l[2],f))) do layers,d
-        d_0 = size(layers[length(layers)].weight)[1]
-        return Chain(layers...,Dense(d_0 => d,f))
-    end
-end
-
 function loss_cossim(α::AbstractFloat,f,M,x::AbstractArray,y::AbstractArray)
     E = encode(M,x)
     C = cossim(E')
