@@ -1,7 +1,7 @@
 {
   description = "Flake for Autoencoders.jl";
   nixConfig = {
-    bash-prompt = "\[Autoencoders$(__git_ps1 \" (%s)\")\]$ ";
+    bash-prompt = "\\[Autoencoders$(__git_ps1 \" (%s)\")\\]$ ";
   };
 
   inputs = {
@@ -12,62 +12,64 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { 
+        pkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
-          config.cudaSupport = system == "x86_64-linux";
-		};
-
-        # Get library paths from the stdenv compiler and from gfortran.
-        gccPath = toString pkgs.stdenv.cc.cc.lib;
-        gfortranPath = toString pkgs.gfortran;
-
-        # Define the multi-line Julia script.
-        # NOTE: The closing delimiter (two single quotes) MUST be flush with the left margin.
-        juliaScript = ''
-using Pkg
-Pkg.instantiate()
-
-Pkg.add("cuDNN")
-Pkg.add("StructArrays")
-
-Pkg.precompile()
-using Autoencoders, cuDNN
-'';
-
-		
-      in {
-        # A derivation for your package.
-        packages.autoencoders = pkgs.stdenv.mkDerivation {
-          name = "Autoencoders.jl";
-          src = ./.;
-          # If your package is purely interpreted, no build phase is needed.
-          # You can extend this if you have precompilation or other build steps.
+          config = {
+            allowUnfree = true;
+            cudaSupport = system == "x86_64-linux";
+          };
         };
 
-        # A development shell that provides Julia with your package instantiated.
-        devShell = with pkgs; mkShell {
+        juliaPkgs = pkgs.juliaPackages;
+
+        # Define the list of packages for the shell environment
+        shellPkgsNested = with pkgs; [
+          julia
+          git
+          stdenv.cc       # Standard compiler environment (needed for wrappers/headers)
+          gfortran      # The gfortran *wrapper* executable
+          stdenv.cc.cc.lib # <--- The actual GCC runtime libraries (incl. libquadmath)
+          (lib.optional stdenv.isLinux cudaPackages.cudatoolkit)
+          (lib.optional stdenv.isLinux cudaPackages.cudnn)
+        ];
+
+        # Flatten the list
+        shellPkgs = pkgs.lib.flatten shellPkgsNested;
+
+        # Build Autoencoders.jl
+        autoencodersBuilt = juliaPkgs.buildJuliaPackage {
+          pname = "Autoencoders";
+          version = "0.1.1"; # TODO: FIX THIS
+          src = ./.;
+          # Propagate the actual libs maybe? Or just gfortran wrapper?
+          # Let's keep gfortran for now, assuming julia build might need wrapper.
+          propagatedBuildInputs = [ pkgs.gfortran ];
+        };
+
+      in {
+        packages.autoencoders = autoencodersBuilt;
+        packages.default = self.packages.${system}.autoencoders;
+
+        devShell = pkgs.mkShell {
           name = "autoencoders-dev-shell";
-          buildInputs = [ 
-		    julia 
-			git
-			stdenv.cc
-			gfortran
-		  ];
+          # Use the list including stdenv.cc.cc.lib
+          buildInputs = shellPkgs;
+
           shellHook = ''
-source ${git}/share/bash-completion/completions/git-prompt.sh
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${gfortranPath}/lib:${gccPath}/lib:${gccPath}/lib64
-echo $LD_LIBRARY_PATH
+            source ${pkgs.git}/share/bash-completion/completions/git-prompt.sh
+            export JULIA_PROJECT="@."
 
-cat > julia_deps.jl <<'EOF'
-${juliaScript}
-EOF
+            # Trust makeLibraryPath again now that stdenv.cc.cc.lib is included
+            export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath shellPkgs}";
 
-# Activate the project and instantiate dependencies.
-julia --project=. julia_deps.jl
+            echo "Nix dev shell for Autoencoders.jl activated."
+            echo "Julia environment uses Project.toml (JULIA_PROJECT=@.)."
+            # Debug check again - THIS SHOULD FINALLY FIND IT
+            echo "--- Checking LD_LIBRARY_PATH ($LD_LIBRARY_PATH) for libquadmath.so.0 ---"
+            ( IFS=: ; for p in $LD_LIBRARY_PATH; do if [ -f "$p/libquadmath.so.0" ]; then echo "  FOUND in $p"; fi; done )
+            echo "----------------------------------------------------"
           '';
         };
       }
     );
 }
-
