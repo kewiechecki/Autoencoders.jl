@@ -1,7 +1,7 @@
 {
   description = "Flake for Autoencoders.jl";
   nixConfig = {
-    bash-prompt = "\\[Autoencoders$(__git_ps1 \" (%s)\")\\]$ ";
+    bash-prompt = "\[Autoencoders$(__git_ps1 \" (%s)\")\]$ ";
   };
 
   inputs = {
@@ -52,7 +52,7 @@
 
         devShell = pkgs.mkShell {
           name = "autoencoders-dev-shell";
-          # Use the list including stdenv.cc.cc.lib
+          # Use the combined list of environments and tools
           buildInputs = shellPkgs;
 
           shellHook = ''
